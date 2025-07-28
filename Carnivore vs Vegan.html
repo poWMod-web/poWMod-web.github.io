@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interactive Report: Carnivore vs. Vegan Diets</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Chosen Palette: Warm Neutrals (Slate, Zinc, Stone) with a soft Amber accent -->
+    <!-- Application Structure Plan: A single-page application with a top navigation bar to switch between three main views: 1) A side-by-side "Diet Comparison" dashboard (default view) featuring interactive radar charts and clickable risk cards for direct comparison. 2) An interactive infographic section titled "Why the Confusion?" using clickable cards to explain the complex factors behind conflicting information. 3) A "Conclusion" section summarizing the key takeaways. This structure was chosen to move away from the linear report format and create a task-oriented, exploratory user experience. It allows users to directly compare the diets, which is the core of the report, and then delve into the contextual "why" at their own pace, enhancing usability and comprehension. -->
+    <!-- Visualization & Content Choices: 1) Report Info: Diet claims vs. scientific evidence. Goal: Compare. Viz: Interactive Radar Chart (Chart.js). Interaction: Hover for tooltips. Justification: Provides a multi-dimensional, at-a-glance comparison of the diets' strengths and weaknesses based on report data. 2) Report Info: Diet risks/considerations. Goal: Inform/Detail. Viz: Clickable Cards (HTML/Tailwind). Interaction: Click to expand/reveal text. Justification: Presents a clean overview with the option to drill down into details, preventing information overload. 3) Report Info: Reasons for conflicting information. Goal: Organize/Explain. Viz: Interactive Grid of Cards (HTML/Tailwind). Interaction: Click to reveal detailed explanations. Justification: Breaks down a complex topic into digestible, thematic sections, making it more approachable than a long block of text. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+      body {            font-family: 'Inter', sans-serif;            background-color: #f8fafc; /* slate-50 */            color: #27272a; /* zinc-800 */        }        .nav-btn {            transition: all 0.3s ease;        }        .nav-btn.active {            background-color: #a16207; /* amber-700 */            color: #ffffff;            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);        }        .content-section {            display: none;        }        .content-section.active {            display: block;        }        .info-card {            transition: all 0.3s ease;            border: 1px solid #e2e8f0; /* slate-200 */        }        .info-card:hover {            transform: translateY(-4px);            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);            border-color: #d97706; /* amber-600 */        }        .risk-card-content {            max-height: 0;            overflow: hidden;            transition: max-height 0.5s ease-out;        }        .chart-container {            position: relative;            width: 100%;            max-width: 500px;            margin-left: auto;            margin-right: auto;            height: 300px;            max-height: 350px;        }        @media (min-width: 768px) {            .chart-container {                height: 350px;                max-height: 400px;            }        }        .gemini-response {            min-height: 100px;            background-color: #f0f9ff; /* sky-50 */            border: 1px solid #bae6fd; /* sky-200 */            border-left: 4px solid #0ea5e9; /* sky-500 */        }
+    </style>
+  </head>
+  <body class="antialiased">
+    <div class="min-h-screen">
+      <!-- Header -->
+      <header class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div class="text-center">
+            <h1 class="text-3xl font-bold text-amber-700">
+              Navigating the Nutritional Divide
+            </h1>
+            <p class="mt-1 text-lg text-zinc-600">
+              An Interactive Analysis of Carnivore vs. Vegan Diets
+            </p>
+          </div>
+        </div>
+        <!-- Navigation -->
+        <nav class="bg-slate-100">
+          <div
+            class="max-w-3xl mx-auto flex justify-center space-x-2 sm:space-x-4 p-2"
+          >
+            <button
+              id="nav-compare"
+              class="nav-btn font-semibold py-2 px-3 sm:px-6 rounded-full text-sm sm:text-base"
+            >
+              Diet Comparison
+            </button>
+            <button
+              id="nav-confusion"
+              class="nav-btn font-semibold py-2 px-3 sm:px-6 rounded-full text-sm sm:text-base"
+            >
+              Why the Confusion?
+            </button>
+            <button
+              id="nav-gemini"
+              class="nav-btn font-semibold py-2 px-3 sm:px-6 rounded-full text-sm sm:text-base"
+            >
+              ✨ Ask Gemini ✨
+            </button>
+            <button
+              id="nav-conclusion"
+              class="nav-btn font-semibold py-2 px-3 sm:px-6 rounded-full text-sm sm:text-base"
+            >
+              Conclusion
+            </button>
+          </div>
+        </nav>
+      </header>
+      <!-- Main Content -->
+      <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <!-- Section 1: Diet Comparison -->
+        <section id="section-compare" class="content-section">
+          <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-zinc-800">
+              Diet Comparison: At a Glance
+            </h2>
+            <p class="mt-2 max-w-3xl mx-auto text-lg text-zinc-600">
+              This section provides a direct, side-by-side comparison of the
+              Carnivore and Vegan diets. Use the interactive chart to see how
+              their claims stack up against scientific evidence, and click on
+              the cards below to explore the specific health risks and
+              nutritional considerations for each approach.
+            </p>
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+            <!-- Carnivore Diet Column -->
+            <div
+              class="bg-white p-6 rounded-lg shadow-md border-t-4 border-amber-700"
+            >
+              <h3 class="text-2xl font-bold text-center mb-4 text-amber-800">
+                🥩 Carnivore Diet
+              </h3>
+              <div class="text-sm text-zinc-700 space-y-2 mb-6">
+                <p>
+                  <strong class="font-semibold text-zinc-800"
+                    >Core Principle:</strong
+                  >
+                  Exclusively consumes animal products.
+                </p>
+                <p>
+                  <strong class="font-semibold text-zinc-800"
+                    >Foods Eaten:</strong
+                  >
+                  Meat, fish, eggs, and sometimes low-lactose dairy.
+                </p>
+                <p>
+                  <strong class="font-semibold text-zinc-800"
+                    >Foods Avoided:</strong
+                  >
+                  All plant-based foods (fruits, vegetables, grains, legumes,
+                  nuts, seeds).
+                </p>
+              </div>
+              <div class="chart-container">
+                <canvas id="carnivoreChart"></canvas>
+              </div>
+              <div class="mt-8">
+                <h4 class="text-xl font-semibold text-center mb-4">
+                  Risks & Considerations
+                </h4>
+                <div id="carnivore-risks" class="space-y-3"></div>
+              </div>
+            </div>
+            <!-- Vegan Diet Column -->
+            <div
+              class="bg-white p-6 rounded-lg shadow-md border-t-4 border-emerald-700"
+            >
+              <h3 class="text-2xl font-bold text-center mb-4 text-emerald-800">
+                🌱 Vegan Diet
+              </h3>
+              <div class="text-sm text-zinc-700 space-y-2 mb-6">
+                <p>
+                  <strong class="font-semibold text-zinc-800"
+                    >Core Principle:</strong
+                  >
+                  Exclusively consumes plant-based foods.
+                </p>
+                <p>
+                  <strong class="font-semibold text-zinc-800"
+                    >Foods Eaten:</strong
+                  >
+                  Fruits, vegetables, grains, legumes, nuts, and seeds.
+                </p>
+                <p>
+                  <strong class="font-semibold text-zinc-800"
+                    >Foods Avoided:</strong
+                  >
+                  All animal products (meat, fish, dairy, eggs, honey).
+                </p>
+              </div>
+              <div class="chart-container">
+                <canvas id="veganChart"></canvas>
+              </div>
+              <div class="mt-8">
+                <h4 class="text-xl font-semibold text-center mb-4">
+                  Nutritional Considerations
+                </h4>
+                <div id="vegan-risks" class="space-y-3"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- Section 2: Why the Confusion? -->
+        <section id="section-confusion" class="content-section">
+          <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-zinc-800">
+              Why Is Dietary Information So Conflicting?
+            </h2>
+            <p class="mt-2 max-w-3xl mx-auto text-lg text-zinc-600">
+              The constant contradictions in dietary advice are not random. This
+              section explores the key factors that contribute to public
+              confusion. Click on each card to uncover how research challenges,
+              individual differences, personal beliefs, and media influence
+              shape the information we receive.
+            </p>
+          </div>
+          <div
+            id="confusion-factors"
+            class="grid grid-cols-1 md:grid-cols-2 gap-6"
+          >
+            <!-- Cards will be injected here by JS -->
+          </div>
+        </section>
+        <!-- Section 3: Ask Gemini -->
+        <section id="section-gemini" class="content-section">
+          <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg">
+            <h2 class="text-3xl font-bold text-zinc-800 text-center mb-6">
+              ✨ Ask Gemini: Your Nutritional Questions Answered ✨
+            </h2>
+            <p class="mb-6 text-zinc-700 text-center">
+              Have a specific question about carnivore or vegan diets, or
+              general nutrition? Type it below and Gemini will provide a
+              concise, informative answer.
+            </p>
+            <div class="mb-6">
+              <textarea
+                id="gemini-question-input"
+                class="w-full p-3 border border-slate-300 rounded-md focus:ring-amber-500 focus:border-amber-500"
+                rows="4"
+                placeholder="e.g., 'What are the benefits of fiber?', 'Is saturated fat bad for you?', 'How do vegans get enough protein?'"
+              ></textarea>
+            </div>
+            <div class="text-center mb-6">
+              <button
+                id="ask-gemini-btn"
+                class="bg-amber-700 hover:bg-amber-800 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105"
+              >
+                Ask Gemini
+              </button>
+            </div>
+            <div
+              id="gemini-response-area"
+              class="gemini-response p-4 rounded-lg text-zinc-700"
+            >
+              <p class="text-center text-zinc-500">
+                Your answer will appear here...
+              </p>
+            </div>
+            <p class="mt-4 text-xs text-zinc-500 text-center">
+              Disclaimer: The information provided by Gemini is for general
+              knowledge and informational purposes only, and does not constitute
+              medical advice. Always consult with a qualified healthcare
+              professional or registered dietitian for personalized dietary
+              advice.
+            </p>
+          </div>
+        </section>
+        <!-- Section 4: Conclusion -->
+        <section id="section-conclusion" class="content-section">
+          <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-lg">
+            <h2 class="text-3xl font-bold text-zinc-800 text-center mb-6">
+              Key Takeaways & Final Verdict
+            </h2>
+            <div
+              id="conclusion-content"
+              class="prose prose-lg max-w-none text-zinc-700"
+            >
+              <!-- Content injected by JS -->
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {                        const dietData = {                carnivore: {                    chart: {                        labels: ['Weight Loss (Short-term)', 'Blood Sugar Control', 'Long-term Safety', 'Nutrient Adequacy', 'Cardiovascular Health', 'Scientific Backing'],                        data: [4, 3, 1, 1, 1, 1], // Scores out of 5                        backgroundColor: 'rgba(217, 119, 6, 0.2)',                        borderColor: 'rgba(217, 119, 6, 1)',                    },                    risks: [                        { title: 'Severe Nutrient Deficiencies', content: 'The diet provides zero fiber and is inherently low in Vitamin C, E, magnesium, potassium, and phytonutrients. This contradicts decades of research on the importance of these elements for long-term health, digestive function, and disease prevention.' },                        { title: 'Cardiovascular Health Concerns', content: 'High intake of saturated fat and cholesterol can elevate LDL ("bad") cholesterol and TMAO levels, both of which are linked to an increased risk of heart disease and stroke. Long-term effects are largely unknown.' },                        { title: 'Increased Cancer Risk', content: 'The World Health Organization classifies processed meat as a known carcinogen and red meat as a probable carcinogen, particularly linked to colorectal cancer.' },                        { title: 'Kidney and Liver Strain', content: 'Extremely high protein intake places a significant metabolic load on the kidneys and liver, raising concerns about kidney stone formation and organ stress, especially in those with pre-existing conditions.' },                        { title: 'Lack of Long-Term Evidence', content: 'There are virtually no controlled, long-term studies to support the diet\'s safety or efficacy. Most claims are based on anecdotes or short-term, uncontrolled surveys, leaving significant health risks unquantified.' },                    ]                },                vegan: {                    chart: {                        labels: ['Weight Management', 'Blood Sugar Control', 'Long-term Safety', 'Nutrient Adequacy (Planned)', 'Cardiovascular Health', 'Scientific Backing'],                        data: [4, 4, 4, 3, 5, 5], // Scores out of 5                        backgroundColor: 'rgba(4, 120, 87, 0.2)',                        borderColor: 'rgba(4, 120, 87, 1)',                    },                    risks: [                        { title: 'Vitamin B12 Deficiency', content: 'B12 is not naturally present in plant foods. Deficiency can cause irreversible neurological damage. Supplementation or consumption of fortified foods is essential for all vegans.' },                        { title: 'Iron & Zinc Bioavailability', content: 'Plants contain non-heme iron and zinc, which are less easily absorbed than their animal-based counterparts. Absorption can be hindered by phytates found in grains and legumes, requiring careful planning.' },                        { title: 'Omega-3 Fatty Acids (EPA/DHA)', content: 'While plant sources provide ALA, the conversion to long-chain EPA and DHA (crucial for brain health) is inefficient. Algal oil supplements are often recommended.' },                        { title: 'Calcium and Vitamin D', content: 'Vegans may have lower calcium intake, and absorption can be affected by oxalates in some plants. Vitamin D often requires supplementation or adequate sun exposure. Both are vital for bone health.' },                        { title: 'Requires Careful Planning', content: 'To be healthy, a vegan diet must be well-planned to ensure adequate intake of all essential nutrients. A diet of processed vegan junk food will not confer health benefits and can lead to deficiencies.' },                    ]                }            };
+          const confusionData = [                { title: '🔬 Methodological Challenges in Research', content: 'Nutritional science is complex. Most long-term studies are observational, meaning they can show correlation but not causation. It\'s difficult to isolate diet from other lifestyle factors like exercise or smoking. Furthermore, the lack of long-term Randomized Controlled Trials (RCTs) for restrictive diets leaves a gap in high-quality evidence, which is often filled by less reliable data.' },                { title: '🧬 Individual Variability', content: 'People respond to diets differently due to genetics, pre-existing health conditions, and gut microbiome composition. A diet that works for one person may be harmful to another. This "N of 1" phenomenon explains why personal testimonials, while compelling, are not generalizable scientific evidence.' },                { title: '💬 Anecdotal Evidence & Personal Beliefs', content: 'Personal stories and testimonials are powerful but are not a substitute for scientific evidence. Cognitive biases, like confirmation bias, lead people to seek out information that confirms what they already believe. Diet can also become part of one\'s identity, making it difficult to accept contradictory information.' },                { title: '💰 Media Portrayal & Commercial Interests', content: 'Media often sensationalizes findings for headlines, creating a "food of the week" effect. Additionally, many diet proponents have commercial interests (books, supplements). Large food industries may also fund studies or campaigns to protect their market share, further muddying the waters and creating public distrust.' },            ];                        const conclusionText = `                <p class="mb-4">The perceived contradictions between carnivore and vegan diets arise not from a divided scientific consensus, but from the vast difference in the quality and quantity of evidence supporting each, combined with external factors that create public confusion.</p>                <ul class="list-disc pl-5 space-y-3 mb-6">                    <li><strong class="text-emerald-700">Well-planned vegan diets</strong> are supported by a large body of robust, long-term scientific evidence demonstrating significant health benefits, including reduced risk of heart disease, type 2 diabetes, certain cancers, and improved weight management. While requiring careful planning to avoid specific nutrient deficiencies (like B12), they are recognized as healthy and sustainable by major health organizations.</li>                    <li>The <strong class="text-amber-700">carnivore diet</strong>, in stark contrast, is supported almost exclusively by anecdotal reports and short-term observations. It lacks long-term scientific backing and raises significant concerns among experts regarding severe nutrient deficiencies (especially fiber), increased cardiovascular risk, and potential kidney strain. The short-term benefits reported by some users are often attributable to the elimination of processed foods rather than the merits of an all-meat diet.</li>                </ul>                <p class="mb-4">The conflict you see online is fueled by the challenges of nutritional research, individual variability, the power of personal belief, and the strong influence of media and commercial interests.</p>                <p class="font-semibold text-zinc-800 bg-slate-100 p-4 rounded-lg">To navigate this landscape, it is crucial to prioritize evidence from peer-reviewed scientific literature over personal anecdotes and commercially-driven claims. For personalized dietary advice, consulting a qualified healthcare professional or registered dietitian is the most reliable path to making informed and healthy decisions.</p>            `;
+          // Navigation            const navButtons = {                compare: document.getElementById('nav-compare'),                confusion: document.getElementById('nav-confusion'),                gemini: document.getElementById('nav-gemini'),                conclusion: document.getElementById('nav-conclusion'),            };            const sections = {                compare: document.getElementById('section-compare'),                confusion: document.getElementById('section-confusion'),                gemini: document.getElementById('section-gemini'),                conclusion: document.getElementById('section-conclusion'),            };
+          function switchTab(tab) {                Object.values(navButtons).forEach(btn => btn.classList.remove('active'));                Object.values(sections).forEach(sec => sec.classList.remove('active'));                navButtons[tab].classList.add('active');                sections[tab].classList.add('active');            }
+          navButtons.compare.addEventListener('click', () => switchTab('compare'));            navButtons.confusion.addEventListener('click', () => switchTab('confusion'));            navButtons.gemini.addEventListener('click', () => switchTab('gemini'));            navButtons.conclusion.addEventListener('click', () => switchTab('conclusion'));
+          // Initial setup            switchTab('compare');
+          // Chart setup            const chartOptions = {                maintainAspectRatio: false,                responsive: true,                scales: {                    r: {                        angleLines: { display: true, color: '#d4d4d8' },                        grid: { color: '#e4e4e7' },                        pointLabels: {                             font: { size: 11, weight: '500' },                            color: '#3f3f46'                        },                        suggestedMin: 0,                        suggestedMax: 5,                        ticks: {                            stepSize: 1,                            display: false                        }                    }                },                plugins: {                    legend: { display: false },                    tooltip: {                        callbacks: {                            label: function(context) {                                let label = context.dataset.label || '';                                if (label) {                                    label += ': ';                                }                                if (context.parsed.r !== null) {                                    label += context.parsed.r + ' / 5';                                }                                return label;                            }                        }                    }                }            };
+          new Chart(document.getElementById('carnivoreChart'), {                type: 'radar',                data: {                    labels: dietData.carnivore.chart.labels,                    datasets: [{                        label: 'Carnivore Diet Score',                        data: dietData.carnivore.chart.data,                        backgroundColor: dietData.carnivore.chart.backgroundColor,                        borderColor: dietData.carnivore.chart.borderColor,                        borderWidth: 2,                        pointBackgroundColor: dietData.carnivore.chart.borderColor,                        pointBorderColor: '#fff',                        pointHoverBackgroundColor: '#fff',                        pointHoverBorderColor: dietData.carnivore.chart.borderColor                    }]                },                options: chartOptions            });
+          new Chart(document.getElementById('veganChart'), {                type: 'radar',                data: {                    labels: dietData.vegan.chart.labels,                    datasets: [{                        label: 'Vegan Diet Score',                        data: dietData.vegan.chart.data,                        backgroundColor: dietData.vegan.chart.backgroundColor,                        borderColor: dietData.vegan.chart.borderColor,                        borderWidth: 2,                        pointBackgroundColor: dietData.vegan.chart.borderColor,                        pointBorderColor: '#fff',                        pointHoverBackgroundColor: '#fff',                        pointHoverBorderColor: dietData.vegan.chart.borderColor                    }]                },                options: chartOptions            });                        // Populate Risk/Consideration Cards            function createRiskCard(item, diet) {                const card = document.createElement('div');                card.className = 'bg-slate-50 rounded-lg border border-slate-200 overflow-hidden';                                const button = document.createElement('button');                button.className = 'w-full text-left p-4 font-semibold text-zinc-700 flex justify-between items-center focus:outline-none';                button.innerHTML = `<span>${item.title}</span><span class="transform transition-transform duration-300 text-xl font-mono text-${diet === 'carnivore' ? 'amber' : 'emerald'}-600">+</span>`;                                const content = document.createElement('div');                content.className = 'risk-card-content px-4';                content.innerHTML = `<p class="pb-4 text-zinc-600 text-sm">${item.content}</p>`;
+              card.appendChild(button);                card.appendChild(content);
+              button.addEventListener('click', () => {                    const icon = button.querySelector('span:last-child');                    if (content.style.maxHeight) {                        content.style.maxHeight = null;                        icon.classList.remove('rotate-45');                    } else {                        content.style.maxHeight = content.scrollHeight + "px";                        icon.classList.add('rotate-45');                    }                });                                return card;            }
+          const carnivoreRisksContainer = document.getElementById('carnivore-risks');            dietData.carnivore.risks.forEach(item => {                carnivoreRisksContainer.appendChild(createRiskCard(item, 'carnivore'));            });
+          const veganRisksContainer = document.getElementById('vegan-risks');            dietData.vegan.risks.forEach(item => {                veganRisksContainer.appendChild(createRiskCard(item, 'vegan'));            });
+          // Populate Confusion Factors            const confusionContainer = document.getElementById('confusion-factors');            confusionData.forEach(item => {                const card = document.createElement('div');                card.className = 'info-card bg-white p-6 rounded-lg cursor-pointer';                card.innerHTML = `                    <h3 class="text-xl font-bold mb-2 text-zinc-800">${item.title}</h3>                    <p class="text-zinc-600 hidden">${item.content}</p>                    <span class="text-amber-600 font-semibold mt-2 inline-block">Click to reveal</span>                `;                card.addEventListener('click', () => {                    const p = card.querySelector('p');                    const span = card.querySelector('span');                    p.classList.toggle('hidden');                    span.textContent = p.classList.contains('hidden') ? 'Click to reveal' : 'Click to hide';                });                confusionContainer.appendChild(card);            });                        // Populate Conclusion            document.getElementById('conclusion-content').innerHTML = conclusionText;
+          // Gemini API Integration            const geminiQuestionInput = document.getElementById('gemini-question-input');            const askGeminiBtn = document.getElementById('ask-gemini-btn');            const geminiResponseArea = document.getElementById('gemini-response-area');
+          askGeminiBtn.addEventListener('click', async () => {                const question = geminiQuestionInput.value.trim();                if (!question) {                    geminiResponseArea.innerHTML = '<p class="text-red-500 text-center">Please enter a question.</p>';                    return;                }
+              geminiResponseArea.innerHTML = '<p class="text-center text-zinc-500">Loading response... Please wait.</p>';                askGeminiBtn.disabled = true;
+              try {                    let chatHistory = [];                    const prompt = `Given the context of health benefits and risks of carnivore and vegan diets, and the reasons for conflicting information, answer the following question concisely and informatively. Emphasize that this is general information and not medical advice. Question: ${question}`;                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });                    const payload = { contents: chatHistory };                    const apiKey = "";                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                  const response = await fetch(apiUrl, {                        method: 'POST',                        headers: { 'Content-Type': 'application/json' },                        body: JSON.stringify(payload)                    });
+                  const result = await response.json();
+                  if (result.candidates && result.candidates.length > 0 &&                        result.candidates[0].content && result.candidates[0].content.parts &&                        result.candidates[0].content.parts.length > 0) {                        const text = result.candidates[0].content.parts[0].text;                        geminiResponseArea.innerHTML = `<p>${text}</p>`;                    } else {                        geminiResponseArea.innerHTML = '<p class="text-red-500">Sorry, I could not get a response. Please try again.</p>';                    }                } catch (error) {                    console.error('Error calling Gemini API:', error);                    geminiResponseArea.innerHTML = '<p class="text-red-500">An error occurred while fetching the response. Please check your network connection or try again later.</p>';                } finally {                    askGeminiBtn.disabled = false;                }            });        });
+    </script>
+  </body>
+</html>
